@@ -12,10 +12,10 @@ jobs:
     steps:
 
       - name: Descargar código
-        run: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Configurar Java
-        run: actions/setup-java@v4
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -27,17 +27,6 @@ jobs:
       - name: Construir código
         run: ./gradlew build
 
-      -name: Subir informes
-        if failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: informe-test-fallidos
-          path: build/reports/tests/
-          retention-days: 5
-
-      - name: Testear el código
-        run: ./gradlew test
-      
       -name: Subir informes
         if failure()
         uses: actions/upload-artifact@v4
