@@ -81,6 +81,6 @@ jobs:
           password: ${{ secrets.email_password }}
           to: danope49@gmail.com
           from: "GitHub Actions <no-reply@ejemplo.com>"
-          subject: "Pipeline exitoso"
+          subject: "Pipeline exitoso, va bien"
           body: |
             Hola! El pipeline ha tenido éxito.
