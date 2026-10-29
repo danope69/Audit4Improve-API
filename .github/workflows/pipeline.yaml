@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: envia email
-        uses: dawidd6/action-send-mail
+        uses: dawidd6/action-send-mail@v4
         with:
           username: ${{ secrets.email_username }}
           password: ${{ secrets.email_password }}
