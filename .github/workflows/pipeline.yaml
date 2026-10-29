@@ -73,4 +73,4 @@ jobs:
           from: "GitHub Actions <no-reply@ejemplo.com>"
           subject: "Pipeline exitoso"
           body: |
-          "Hola! El pipeline ha tenido éxito."
+          Hola! El pipeline ha tenido éxito.
