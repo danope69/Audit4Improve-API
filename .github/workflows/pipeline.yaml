@@ -31,5 +31,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: informe-test-fallidos
-          path: build/reports/tests/
+          path: app/build/reports/tests/
           retention-days: 5
