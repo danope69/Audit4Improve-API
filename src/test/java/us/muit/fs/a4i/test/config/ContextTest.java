@@ -6,7 +6,12 @@ package us.muit.fs.a4i.test.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
+import java.awt.Font;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import us.muit.fs.a4i.config.Context;
+import us.muit.fs.a4i.config.Checker;
+import us.muit.fs.a4i.model.entities.Indicator;
 
 /**
  * @author Isabel Román
@@ -55,7 +62,18 @@ class ContextTest {
 	 */
 	@Test
 	void testGetContext() {
-		fail("Not yet implemented");
+		Context first = null;
+		Context second = null;
+		try {
+			first = Context.getContext();
+			second = Context.getContext();
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
+		assertNotNull(first, "Deberia devolver una instancia de Context");
+		assertNotNull(second, "Deberia devolver una instancia de Context");
+		assertSame(first, second, "El patron singleton deberia devolver siempre la misma instancia");
 	}
 
 	/**
@@ -63,7 +81,25 @@ class ContextTest {
 	 */
 	@Test
 	void testSetAppConf() {
-		fail("Not yet implemented");
+		File appConf = null;
+		try {
+			// Se crea un fichero temporal con una propiedad nueva
+			// No se sobreescriben las propiedades por defecto para no alterar el resto de tests
+			appConf = File.createTempFile("appConf", ".conf");
+			try (PrintWriter writer = new PrintWriter(appConf)) {
+				writer.println("app.custom.property=testValue");
+			}
+			Context.setAppConf(appConf.getAbsolutePath());
+			assertTrue(Context.getContext().getPropertiesNames().contains("app.custom.property"),
+				"La propiedad del fichero de aplicacion deberia aparecer en las propiedades");
+		} catch (IOException e) {
+			fail("No deberia haber problemas leyendo el fichero de aplicacion");
+			e.printStackTrace();
+		} finally {
+			if (appConf != null && appConf.exists()) {
+				appConf.deleteOnExit();
+			}
+		}
 	}
 
 	/**
@@ -71,7 +107,21 @@ class ContextTest {
 	 */
 	@Test
 	void testGetChecker() {
-		fail("Not yet implemented");
+		Checker checker = null;
+		try {
+			checker = Context.getContext().getChecker();
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
+		assertNotNull(checker, "Deberia existir un checker configurado");
+		try {
+			// Las sucesivas consultas devuelven siempre el mismo checker
+			assertSame(checker, Context.getContext().getChecker(), "El checker deberia ser unico");
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -105,7 +155,15 @@ class ContextTest {
 	 */
 	@Test
 	void testGetDefaultFont() {
-		fail("Not yet implemented");
+		try {
+			Font font = Context.getContext().getDefaultFont();
+			assertNotNull(font, "Deberia construir una fuente a partir de las propiedades por defecto");
+			assertEquals(12, font.getSize(), "La altura por defecto definida en a4i.conf es 12");
+			assertEquals(Font.PLAIN, font.getStyle(), "La fuente por defecto no deberia tener estilo");
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -113,7 +171,15 @@ class ContextTest {
 	 */
 	@Test
 	void testGetMetricFont() {
-		fail("Not yet implemented");
+		try {
+			Font metricFont = Context.getMetricFont();
+			assertNotNull(metricFont, "Sin fuente propia para metricas deberia devolver la fuente por defecto");
+			assertEquals(Context.getContext().getDefaultFont(), metricFont,
+				"Sin fuente definida para metricas debe coincidir con la fuente por defecto");
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -121,7 +187,16 @@ class ContextTest {
 	 */
 	@Test
 	void testGetIndicatorFont() {
-		fail("Not yet implemented");
+		try {
+			Font indicatorFont = Context.getIndicatorFont(Indicator.State.OK);
+			assertNotNull(indicatorFont, "Deberia devolver una fuente para el estado OK");
+			// En el fichero de configuracion no hay fuentes especificas por estado, se usa la fuente por defecto
+			assertEquals(Context.getContext().getDefaultFont(), indicatorFont,
+				"Sin fuente especifica para el estado se debe usar la fuente por defecto");
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -129,7 +204,21 @@ class ContextTest {
 	 */
 	@Test
 	void testGetPropertiesNames() {
-		fail("Not yet implemented");
+		Set<String> names = null;
+		try {
+			names = Context.getContext().getPropertiesNames();
+		} catch (IOException e) {
+			fail("No deberia haber problemas con el fichero de configuracion");
+			e.printStackTrace();
+		}
+		assertNotNull(names, "Deberia devolver el conjunto de propiedades");
+		assertFalse(names.isEmpty(), "Deberia haber propiedades definidas");
+		assertTrue(names.contains("persistence.type"), "Debe estar la propiedad persistence.type");
+		assertTrue(names.contains("remote.type"), "Debe estar la propiedad remote.type");
+		assertTrue(names.contains("Font.default.type"), "Deben estar las propiedades de la fuente por defecto");
+		assertTrue(names.contains("Font.default.height"), "Deben estar las propiedades de la fuente por defecto");
+		assertTrue(names.contains("Font.default.color"), "Deben estar las propiedades de la fuente por defecto");
 	}
 
 }
+

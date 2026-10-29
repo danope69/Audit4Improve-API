@@ -1,6 +1,7 @@
 package us.muit.fs.a4i.test.model.entities;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -32,7 +33,6 @@ import us.muit.fs.a4i.model.entities.Report;
 import us.muit.fs.a4i.model.entities.ReportI;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 
 
 /**
@@ -110,10 +110,15 @@ class ReportTest {
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#Report()}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testReport() {
-		
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		// Un informe recien creado no tiene metricas ni indicadores, id ni tipo
+		assertNotNull(reportTested.getAllMetrics(), "Deberia existir la coleccion de metricas");
+		assertTrue(reportTested.getAllMetrics().isEmpty(), "Un informe recien creado no tiene metricas");
+		assertNull(reportTested.getMetricByName("issues"), "Un informe vacio no tiene la metrica issues");
+		assertNull(reportTested.getIndicatorByName("overdued"), "Un informe vacio no tiene indicadores");
+		assertNull(reportTested.getId(), "Un informe recien creado no tiene identificador");
+		assertNull(reportTested.getType(), "Un informe recien creado no tiene tipo");
 	}
 
 	/**
@@ -121,7 +126,6 @@ class ReportTest {
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#Report(java.lang.String)}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testReportString() {
 		reportTested=new Report("id");
 		
@@ -134,9 +138,27 @@ class ReportTest {
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#getMetricByName(java.lang.String)}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testGetMetricByName() {
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		setMetricsMocks();
+		// Al no estar anadidas las metricas no se localizan
+		assertNull(reportTested.getMetricByName("issues"), "Sin anadir la metrica no deberia existir");
+		// Se anade la metrica de tipo Integer y se localiza por su nombre
+		reportTested.addMetric(metricIntMock);
+		Metric metric = reportTested.getMetricByName("issues");
+		assertNotNull(metric, "Deberia localizar la metrica anadida");
+		assertSame(metricIntMock, metric, "Deberia devolver la misma metrica anadida");
+		assertEquals(metricIntMock.getValue(), metric.getValue(), "Deberia tener el valor especificado en el mock");
+		assertEquals(metricIntMock.getDescription(), metric.getDescription(),
+			"Deberia tener la descripcion especificada en el mock");
+		// Igualmente con la metrica de tipo Date
+		reportTested.addMetric(metricDatMock);
+		metric = reportTested.getMetricByName("lastPush");
+		assertNotNull(metric, "Deberia localizar la metrica anadida");
+		assertSame(metricDatMock, metric, "Deberia devolver la misma metrica anadida");
+		assertEquals(metricDatMock.getValue(), metric.getValue(), "Deberia tener el valor especificado en el mock");
+		assertEquals(metricDatMock.getDescription(), metric.getDescription(),
+			"Deberia tener la descripcion especificada en el mock");
 	}
 
 	/**
@@ -175,18 +197,34 @@ class ReportTest {
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#getIndicatorByName(java.lang.String)}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testGetIndicatorByName() {
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		// Al no estar anadido el indicador no se localiza
+		assertNull(reportTested.getIndicatorByName("overdued"), "Sin anadir el indicador no deberia existir");
+		String indicatorName = "overdued";
+		Mockito.when(indicatorIntMock.getName()).thenReturn(indicatorName);
+		reportTested.addIndicator(indicatorIntMock);
+		Indicator indicator = reportTested.getIndicatorByName(indicatorName);
+		assertNotNull(indicator, "Deberia localizar el indicador anadido");
+		assertSame(indicatorIntMock, indicator, "Deberia devolver el mismo indicador anadido");
+		// Los nombres que no estan anadidos tampoco se localizan
+		assertNull(reportTested.getIndicatorByName("noexiste"), "Un indicador no anadido no deberia existir");
 	}
 
 	/**
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#addIndicator(us.muit.fs.a4i.model.entities.Indicator)}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testAddIndicator() {
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		String indicatorName = "overdued";
+		Mockito.when(indicatorIntMock.getName()).thenReturn(indicatorName);
+		// El informe almacena el indicador usando su nombre como clave
+		reportTested.addIndicator(indicatorIntMock);
+		Mockito.verify(indicatorIntMock).getName();
+		Indicator indicator = reportTested.getIndicatorByName(indicatorName);
+		assertSame(indicatorIntMock, indicator, "El indicador anadido debe localizarse por su nombre");
+		assertNull(reportTested.getIndicatorByName("noexiste"), "Un indicador no anadido no deberia existir");
 	}
 
 	/**
@@ -234,18 +272,29 @@ class ReportTest {
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#setId(java.lang.String)}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testSetId() {
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		// Un informe recien creado no tiene identificador
+		assertNull(reportTested.getId(), "Un informe recien creado no tiene identificador");
+		reportTested.setId("idPrueba");
+		assertEquals("idPrueba", reportTested.getId(), "setId deberia establecer el identificador");
+		// El identificador se puede actualizar
+		reportTested.setId("otroId");
+		assertEquals("otroId", reportTested.getId(), "setId deberia actualizar el identificador");
 	}
 
 	/**
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#getId()}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testGetId() {
-		fail("Not yet implemented"); // TODO
+		// El identificador establecido en el constructor se consulta con getId
+		reportTested = new Report("idPrueba");
+		assertEquals("idPrueba", reportTested.getId(),
+			"getId deberia devolver el identificador establecido en el constructor");
+		// Un informe sin identificador establecido devuelve null
+		reportTested = new Report();
+		assertNull(reportTested.getId(), "Un informe sin identificador deberia devolver null");
 	}
 
 	/**
@@ -305,18 +354,33 @@ class ReportTest {
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#toString()}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testToString() {
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		Mockito.when(metricIntMock.getName()).thenReturn("issues");
+		Mockito.when(indicatorIntMock.getName()).thenReturn("overdued");
+		reportTested.addMetric(metricIntMock);
+		reportTested.addIndicator(indicatorIntMock);
+		String report = reportTested.toString();
+		assertNotNull(report, "toString no deberia devolver null");
+		assertTrue(report.contains("issues"), "La descripcion del informe deberia contener la metrica issues");
+		assertTrue(report.contains("overdued"), "La descripcion del informe deberia contener el indicador overdued");
 	}
 
 	/**
 	 * Test method for {@link us.muit.fs.a4i.model.entities.Report#getAllMetrics()}.
 	 */
 	@Test
-	@Tag("noacabado")
 	void testGetAllMetrics() {
-		fail("Not yet implemented"); // TODO
+		reportTested = new Report();
+		Mockito.when(metricIntMock.getName()).thenReturn("issues");
+		Mockito.when(metricDatMock.getName()).thenReturn("lastPush");
+		reportTested.addMetric(metricIntMock);
+		reportTested.addMetric(metricDatMock);
+		Collection<Metric> metricsReport = reportTested.getAllMetrics();
+		assertNotNull(metricsReport, "Deberia devolver la coleccion de metricas");
+		assertEquals(2, metricsReport.size(), "Deberia contener el numero de metricas anadidas");
+		assertTrue(metricsReport.contains(metricIntMock), "La coleccion deberia contener la metrica de tipo Integer");
+		assertTrue(metricsReport.contains(metricDatMock), "La coleccion deberia contener la metrica de tipo Date");
 	}
 	void setMetricsMocks() {
 		Date date=Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC));
@@ -330,3 +394,4 @@ class ReportTest {
 	}
 
 }
+

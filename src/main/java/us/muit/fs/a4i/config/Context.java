@@ -112,6 +112,23 @@ public class Context {
 		getContext().properties.load(new FileInputStream(appConPath));
 	}
 
+	/**
+	 * Convierte el valor de una propiedad de altura de fuente a un entero
+	 * @param height Valor de la propiedad con la altura de la fuente
+	 * @return la altura como entero; -1 si el valor no es un numero valido
+	 */
+	private static int parseFontHeight(String height) {
+		int heightValue = -1;
+		if (height != null) {
+			try {
+				heightValue = Integer.parseInt(height);
+			} catch (NumberFormatException e) {
+				heightValue = -1;
+			}
+		}
+		return heightValue;
+	}
+	
 	public Checker getChecker() {
 		return checker;
 	}
@@ -154,10 +171,16 @@ public class Context {
 	 */
 	public Font getDefaultFont() {
 		Font font = null;
-		// TO DO
-		String color = properties.getProperty("Font.default.color");
-		String height = properties.getProperty("Font.default.height");
+		// Leemos las propiedades de la fuente por defecto (tipo y altura)
 		String type = properties.getProperty("Font.default.type");
+		String height = properties.getProperty("Font.default.height");
+		int heightValue = parseFontHeight(height);
+		// Si alguna propiedad no esta definida o el valor no es valido se crea una fuente simple
+		if (type == null || heightValue == -1) {
+			font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+		} else {
+			font = new Font(type, Font.PLAIN, heightValue);
+		}
 		return font;
 	}
 
@@ -178,7 +201,21 @@ public class Context {
 	 */
 	public static Font getMetricFont() {
 		Font font = null;
-		// TO DO
+		try {
+			Context context = getContext();
+			String type = context.properties.getProperty("Font.metric.type");
+			String height = context.properties.getProperty("Font.metric.height");
+			int heightValue = parseFontHeight(height);
+			// Si no se ha definido una fuente para las metricas se devuelve la fuente por defecto
+			if (type == null || heightValue == -1) {
+				font = context.getDefaultFont();
+			} else {
+				font = new Font(type, Font.PLAIN, heightValue);
+			}
+		} catch (IOException e) {
+			log.warning("No se puede leer el fichero de configuracion, se devuelve una fuente simple");
+			font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+		}
 		return font;
 	}
 
@@ -198,8 +235,21 @@ public class Context {
 
 	public static Font getIndicatorFont(Indicator.State state) throws IOException {
 		Font font = null;
-
-		// TO DO
+		Context context = getContext();
+		// Se buscan propiedades especificas de fuentes por estado (por ejemplo Font.indicator.OK.type)
+		// Si no existe una fuente especifica para el estado se devuelve la fuente por defecto
+		String type = context.properties.getProperty("Font.indicator." + state.name() + ".type");
+		String height = context.properties.getProperty("Font.indicator." + state.name() + ".height");
+		if (type == null) {
+			font = context.getDefaultFont();
+			log.info("No hay fuente especifica para el estado " + state.name() + ", se usa la fuente por defecto");
+		} else {
+			int heightValue = parseFontHeight(height);
+			if (heightValue == -1) {
+				heightValue = 12;
+			}
+			font = new Font(type, Font.PLAIN, heightValue);
+		}
 		return font;
 	}
 
@@ -241,3 +291,5 @@ public class Context {
 	}
 
 }
+
+

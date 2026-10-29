@@ -79,7 +79,43 @@ class CheckerTest {
 	 */
 	@Test
 	void testSetAppMetrics() {
-		fail("Not yet implemented"); // TODO
+		HashMap<String,String> returnedMap = null;
+		// Primero, sin fichero de configuracion de aplicacion establecido
+		try {
+			// Una metrica no definida en la api no se localiza
+			returnedMap = underTest.definedMetric("downloads", Integer.class.getName());
+			assertNull(returnedMap, "Sin fichero de aplicacion, downloads no deberia estar definida");
+		} catch (FileNotFoundException e) {
+			fail("El fichero esta en la carpeta resources");
+			e.printStackTrace();
+		}
+		// Establezco un fichero de configuracion de aplicacion que no existe
+		underTest.setAppMetrics("pepe");
+		try {
+			// Al buscar una metrica no definida en la api intenta leer el fichero de aplicacion y falla
+			returnedMap = underTest.definedMetric("downloads", Integer.class.getName());
+			fail("Deberia lanzar una excepcion porque intenta buscar en un fichero que no existe");
+		} catch (FileNotFoundException e) {
+			log.info("Lanza la excepcion adecuada, FileNotFound");
+		} catch (Exception e) {
+			fail("Lanza la excepcion equivocada " + e);
+		}
+		// Establezco un fichero de configuracion de aplicacion que si existe
+		underTest.setAppMetrics(appConfPath);
+		try {
+			// Una metrica definida en el fichero de aplicacion se localiza
+			returnedMap = underTest.definedMetric("downloads", Integer.class.getName());
+			assertNotNull(returnedMap, "Deberia devolver un hashmap, la metrica esta definida");
+			assertTrue(returnedMap.containsKey("unit"), "La clave unit tiene que estar en el mapa");
+			assertTrue(returnedMap.containsKey("description"), "La clave description tiene que estar en el mapa");
+			// Las metricas definidas en la api siguen estando disponibles
+			assertNotNull(underTest.definedMetric("watchers", Integer.class.getName()),
+				"Las metricas de la api siguen definidas");
+		} catch (FileNotFoundException e) {
+			fail("No deberia devolver esta excepcion");
+		} catch (Exception e) {
+			fail("Lanza una excepcion no reconocida " + e);
+		}
 	}
 
 	/**
@@ -236,3 +272,4 @@ class CheckerTest {
 	}
 
 }
+

@@ -131,7 +131,22 @@ class MetricBuilderTest {
 	 */
 	@Test
 	void testDescription() {
-		fail("Not yet implemented"); // TODO
+		MetricBuilder<Integer> underTest = null;
+		try {
+			underTest = new MetricBuilder<Integer>("watchers", 33);
+		} catch (MetricException e) {
+			fail("No deberia haber saltado esta excepcion");
+			e.printStackTrace();
+		}
+		// La descripcion establecida por la aplicacion debe prevalecer sobre la del fichero de configuracion
+		underTest.description("Descripcion establecida por la aplicacion");
+		Metric newMetric = underTest.build();
+		assertEquals("Descripcion establecida por la aplicacion", newMetric.getDescription(),
+			"La descripcion establecida deberia prevalecer sobre la de la configuracion");
+		// El resto de datos de la metrica se conservan
+		assertEquals("watchers", newMetric.getName(), "El nombre no se deberia alterar");
+		assertEquals(33, newMetric.getValue(), "El valor no se deberia alterar");
+		assertEquals("watchers", newMetric.getUnit(), "La unidad se conserva la de la configuracion");
 	}
 
 	/**
@@ -163,8 +178,32 @@ class MetricBuilderTest {
 	 */
 	@Test
 	void testUnit() {
-		fail("Not yet implemented"); // TODO
+		MetricBuilder<Integer> underTest = null;
+		try {
+			underTest = new MetricBuilder<Integer>("watchers", 33);
+		} catch (MetricException e) {
+			fail("No deberia haber saltado esta excepcion");
+			e.printStackTrace();
+		}
+		// El constructor permite fijar unidades de medida propias para la metrica
+		underTest.unit("numero de observadores");
+		Metric newMetric = underTest.build();
+		assertEquals("numero de observadores", newMetric.getUnit(),
+			"La unidad establecida deberia prevalecer sobre la de la configuracion");
+		// El resto de datos de la metrica se conservan
+		assertEquals("watchers", newMetric.getName(), "El nombre no se deberia alterar");
+		assertEquals(33, newMetric.getValue(), "El valor no se deberia alterar");
+		// Si no se establecen unidades, se conservan las del fichero de configuracion
+		try {
+			underTest = new MetricBuilder<Integer>("issues", 5);
+		} catch (MetricException e) {
+			fail("No deberia haber saltado esta excepcion");
+			e.printStackTrace();
+		}
+		newMetric = underTest.build();
+		assertEquals("issues", newMetric.getUnit(), "Sin unidad establecida se conserva la de la configuracion");
 	}
 	
 
 }
+

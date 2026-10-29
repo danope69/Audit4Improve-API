@@ -92,8 +92,9 @@ public class Report implements ReportI {
 
 	@Override
 	public void addMetric(Metric met) {		
-		metrics.put(met.getName(), met);
-		log.info("Añadida métrica "+met+" Con nombre "+met.getName());
+		String metricName = met.getName();
+		metrics.put(metricName, met);
+		log.info("Añadida métrica "+met+" Con nombre "+metricName);
 	}
 	/**
 	 * <p>Busca el indicador solicitado en el informe y lo devuelve</p>
@@ -190,3 +191,4 @@ public class Report implements ReportI {
 	}
 
 }
+

@@ -33,3 +33,30 @@ jobs:
           name: informe-test-fallidos
           path: app/build/reports/tests/
           retention-days: 5
+
+  generate-javadoc:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: genera javadoc
+        run: ./gradlew javadoc
+
+      - name: guarda javadoc como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadoc
+          path: app/build/docs/javadoc/
+          retention-days: 5
+
+  send-email:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: envia email
+        uses: dawidd6/action-send-mail
+        with:
+          username: ${{ secrets.email_username }}
+          password: ${{ secrets.email_password }}
+          to: danope49@gmail.com
