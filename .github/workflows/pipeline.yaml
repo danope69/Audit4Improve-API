@@ -45,6 +45,9 @@ jobs:
       - name: Descargar código
         uses: actions/checkout@v4
 
+      - name: Permisos
+        run: chmod +x ./gradlew
+
       - name: genera javadoc
         run: ./gradlew javadoc
 
